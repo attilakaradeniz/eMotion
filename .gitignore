@@ -172,3 +172,23 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Recordings directory
+recordings/
+*.wav
+*.mp3
+*.ogg
+
+# Logs directory
+logs/
+*.log
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
