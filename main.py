@@ -134,97 +134,98 @@ def analyze_emotion(features):
         # Debug print raw features
         logging.info("Raw features before scaling: %s", features)
         
-        # Normalize features
-        scaler = StandardScaler()
-        features_scaled = scaler.fit_transform(features.reshape(1, -1))
+        # Define typical ranges for normalization
+        feature_ranges = {
+            'energy': (0.0, 0.2),        # RMS energy typical range
+            'spectral': (500, 2500),     # Spectral centroid typical range in Hz
+            'zcr': (0.0, 0.3),          # Zero crossing rate typical range
+            'pitch': (50, 400),          # Pitch typical range in Hz
+            'energy_var': (0.0, 0.1)     # Energy variation typical range
+        }
         
-        # Debug print scaled features
-        logging.info("Scaled features: %s", features_scaled[0])
+        # Manual min-max scaling to [-1, 1] range
+        def scale_feature(value, min_val, max_val):
+            if max_val == min_val:
+                return 0
+            return 2 * ((value - min_val) / (max_val - min_val)) - 1
         
-        # Extract normalized features
-        energy = features_scaled[0][0]      # Energy (RMS)
-        pitch = features_scaled[0][1]       # Spectral centroid
-        zcr = features_scaled[0][2]         # Zero crossing rate
-        pitch_var = features_scaled[0][3]   # Pitch
-        energy_var = features_scaled[0][4]  # Energy variation
+        # Scale each feature
+        energy = scale_feature(features[0], *feature_ranges['energy'])
+        spectral = scale_feature(features[1], *feature_ranges['spectral'])
+        zcr = scale_feature(features[2], *feature_ranges['zcr'])
+        pitch = scale_feature(features[3], *feature_ranges['pitch'])
+        energy_var = scale_feature(features[4], *feature_ranges['energy_var'])
         
-        # Initialize emotion scores with zero baseline
+        features_scaled = np.array([energy, spectral, zcr, pitch, energy_var])
+        logging.info("Scaled features: %s", features_scaled)
+        
+        # Initialize emotion scores
         emotions = {
             'happy': 0.0,
             'sad': 0.0,
             'angry': 0.0,
-            'neutral': 0.0
+            'neutral': 0.3  # Small baseline for neutral
         }
         
-        # Much more aggressive emotion detection
         # Energy contribution
-        if energy > 0.05:  # Even more sensitive threshold
+        if energy > 0.3:
             emotions['happy'] += 0.8
             emotions['angry'] += 0.6
-        elif energy < -0.05:
+        elif energy < -0.3:
             emotions['sad'] += 0.8
         
-        # Pitch contribution
-        if pitch > 0.05:
+        # Spectral centroid contribution
+        if spectral > 0.3:
             emotions['happy'] += 0.7
             if energy > 0:
                 emotions['angry'] += 0.5
-        elif pitch < -0.05:
+        elif spectral < -0.3:
             emotions['sad'] += 0.7
         
         # Zero crossing rate contribution
-        if zcr > 0.05:
+        if zcr > 0.3:
             if energy > 0:
                 emotions['angry'] += 0.7
             else:
                 emotions['happy'] += 0.6
-        elif zcr < -0.05:
+        elif zcr < -0.3:
             emotions['sad'] += 0.5
         
-        # Pitch variance contribution
-        if pitch_var > 0.05:
+        # Pitch contribution
+        if pitch > 0.3:
             emotions['happy'] += 0.6
             if energy > 0:
                 emotions['angry'] += 0.5
-        elif pitch_var < -0.05:
+        elif pitch < -0.3:
             emotions['sad'] += 0.6
         
         # Energy variance contribution
-        if energy_var > 0.05:
+        if energy_var > 0.3:
             emotions['angry'] += 0.6
             emotions['happy'] += 0.4
-        elif energy_var < -0.05:
+        elif energy_var < -0.3:
             emotions['sad'] += 0.5
         
-        # Neutral is now much harder to achieve
-        total_emotion = sum(emotions.values())
-        if total_emotion < 0.3:  # Much lower threshold
-            emotions['neutral'] = 0.3
-        else:
-            emotions['neutral'] = 0.05  # Very small baseline
-        
-        # Debug print emotion scores before normalization
+        # Log emotion scores before normalization
         logging.info("\nEmotion scores before normalization:")
         for emotion, score in emotions.items():
             logging.info(f"{emotion}: {score}")
         
-        # Find the dominant emotion
-        dominant_emotion = max(emotions.items(), key=lambda x: x[1])
-        total_score = sum(emotions.values())
-        confidence = (dominant_emotion[1] / total_score) * 100 if total_score > 0 else 0
+        # Normalize scores to percentages
+        total = sum(emotions.values())
+        if total > 0:  # Prevent division by zero
+            for emotion in emotions:
+                emotions[emotion] = (emotions[emotion] / total) * 100
         
-        # Convert emotion scores to percentages
-        emotions = {k: (v / total_score) * 100 if total_score > 0 else 0 for k, v in emotions.items()}
-        
-        # Debug print final percentages
+        # Log final percentages
         logging.info("\nFinal emotion percentages:")
         for emotion, percentage in emotions.items():
             logging.info(f"{emotion}: {percentage:.2f}%")
         
-        return dominant_emotion[0], confidence, emotions
+        return emotions
         
     except Exception as e:
-        logging.error(f"Error analyzing emotions: {e}")
+        logging.error(f"Error in emotion analysis: {e}")
         raise
 
 def main():
@@ -274,15 +275,11 @@ def main():
             features = extract_features(audio_path)
             
             # Analyze emotions
-            emotion, confidence, all_emotions = analyze_emotion(features)
+            emotions = analyze_emotion(features)
             
             # Display results
             logging.info("\nAnalysis Results:")
-            logging.info(f"Dominant Emotion: {emotion.upper()}")
-            logging.info(f"Confidence: {confidence:.2f}%")
-            
-            logging.info("\nDetailed Emotion Breakdown:")
-            for emotion, percentage in all_emotions.items():
+            for emotion, percentage in emotions.items():
                 logging.info(f"{emotion.capitalize()}: {percentage:.2f}%")
             
             logging.info(f"\nFull analysis has been saved to: {log_file}")
