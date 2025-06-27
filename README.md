@@ -35,10 +35,37 @@ python main.py
 ```
 
 The program will:
-1. Start recording from your microphone
-2. Analyze the emotional content in real-time
-3. Display detected emotions and confidence levels
-4. Save recordings with timestamp-based filenames
+1. Ask if you want to record a new audio or analyze an existing file
+2. For new recordings:
+   - Prompt you to enter the recording duration in seconds
+   - Show a 3-second countdown before recording starts
+   - Display a progress bar during recording
+   - Save the recording with a timestamp-based filename
+3. For existing files:
+   - Prompt you to enter the path to the audio file
+4. Analyze the audio and display:
+   - Detected emotions
+   - Confidence levels
+   - Audio features used for analysis
+   - Save all analysis details to a log file
+
+## User Interface Features
+
+- Interactive command-line interface
+- 3-second countdown before recording starts
+- Progress bar during recording
+- Flexible recording duration (user-specified)
+- Option to analyze existing audio files
+- Detailed logging of analysis results
+- Automatic timestamp-based file naming
+
+## Audio Analysis Features
+- Energy analysis
+- Spectral centroid calculation
+- Zero crossing rate detection
+- Pitch analysis
+- Energy variance measurement
+- Emotion classification based on multiple features
 
 ## Requirements
 - A working microphone
