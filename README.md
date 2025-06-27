@@ -87,10 +87,19 @@ python main.py
 ```
 
 The program will:
-1. Give you a 3-second countdown before recording
-2. Record your voice for 10 seconds
-3. Analyze the emotional content
-4. Display the detected emotion and confidence level
+1. Ask if you want to record a new audio or analyze an existing file
+2. For new recordings:
+   - Prompt you to enter the recording duration in seconds
+   - Show a 3-second countdown before recording starts
+   - Display a progress bar during recording
+   - Save the recording with a timestamp-based filename
+3. For existing files:
+   - Prompt you to enter the path to the audio file
+4. Analyze the audio and display:
+   - Detected emotions
+   - Confidence levels
+   - Audio features used for analysis
+   - Save all analysis details to a log file
 
 ## Requirements
 - A working microphone
