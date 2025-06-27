@@ -1,12 +1,14 @@
 # Voice Emotion Analysis
 
-This program records audio from your system microphone and analyzes the emotional content of the speaker's voice.
+This program records audio from your system microphone and analyzes the emotional content of the speaker's voice. It provides real-time feedback about the detected emotions and their confidence levels.
 
 ## Features
-- Records 10 seconds of audio from the default microphone
-- Analyzes the emotional content of the recorded voice
-- Detects various emotions including happiness, sadness, anger, etc.
-- Shows confidence level of the emotion detection
+- Real-time audio recording from system microphone
+- Emotion detection with multiple emotion categories
+- Confidence scoring for emotion detection
+- Recording management with automatic file naming
+- Logging system for debugging and tracking
+- Test suite for verification
 
 ## Setup
 
@@ -16,11 +18,38 @@ This program records audio from your system microphone and analyzes the emotiona
 pip install -r requirements.txt
 ```
 
-3. Additional setup for pyAudioAnalysis:
+3. The project uses a pre-trained emotion recognition model that is included in the repository
+
+## Project Structure
+- `main.py`: Main application file
+- `requirements.txt`: Python dependencies
+- `test_main.py`: Test suite
+- `recordings/`: Directory for audio recordings
+- `logs/`: Directory for application logs
+
+## Usage
+
+Run the main script:
 ```bash
-# Download the pre-trained emotion recognition model
-mkdir -p data/models
-# You'll need to download the emotion recognition model separately
+python main.py
+```
+
+The program will:
+1. Start recording from your microphone
+2. Analyze the emotional content in real-time
+3. Display detected emotions and confidence levels
+4. Save recordings with timestamp-based filenames
+
+## Requirements
+- A working microphone
+- Python 3.7+
+- Required Python packages (see requirements.txt)
+
+## Testing
+
+To run the test suite:
+```bash
+pytest test_main.py
 ```
 
 ## Usage
