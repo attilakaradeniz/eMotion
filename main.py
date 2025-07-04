@@ -12,6 +12,8 @@ from datetime import datetime
 from tqdm import tqdm
 import librosa
 import logging
+from extract_features import extract_features
+from record_audio import record_audio
 
 # Set up logging
 def setup_logging():
@@ -37,107 +39,8 @@ def setup_logging():
     logging.info(f"Starting new session. Log file: {log_filename}")
     return log_filename
 
-def record_audio(duration=10):
-    """
-    Record audio using sounddevice
-    """
-    try:
-        # Create recordings directory if it doesn't exist
-        os.makedirs("recordings", exist_ok=True)
-        
-        # Create filename with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = os.path.abspath(os.path.join("recordings", f"recording_{timestamp}.wav"))
-        
-        # Recording parameters
-        samplerate = 44100  # CD quality audio
-        channels = 1        # Mono
-        
-        logging.info("\nRecording will start in:")
-        for i in range(3, 0, -1):
-            logging.info(f"{i}...")
-            time.sleep(1)
-        
-        # Play a beep to indicate start of recording
-        winsound.Beep(1000, 500)  # 1000 Hz for 500 milliseconds
-        logging.info("\nRecording... Speak now!")
-        
-        # Record audio
-        recording = sd.rec(int(duration * samplerate),
-                         samplerate=samplerate,
-                         channels=channels,
-                         dtype=np.int16)
-        
-        # Show recording progress with progress bar
-        with tqdm(total=duration, desc="Recording", unit="sec", bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} seconds") as pbar:
-            for _ in range(duration):
-                time.sleep(1)
-                pbar.update(1)
-        sd.wait()  # Wait for any remaining recording time
-        
-        # Play a beep to indicate end of recording
-        winsound.Beep(1000, 500)
-        logging.info("\nRecording finished!")
-        
-        # Save as WAV file
-        sf.write(filename, recording, samplerate)
-        
-        logging.info(f"\nSuccess! Recording saved to: {filename}")
-        return filename
-            
-    except Exception as e:
-        logging.error(f"\nError during recording: {e}")
-        logging.info("\nTroubleshooting tips:")
-        logging.info("1. Make sure your microphone is connected and working")
-        logging.info("2. Check Windows sound settings")
-        logging.info("3. Try running the program as administrator")
-        raise
-
-def extract_features(audio_path):
-    """
-    Extract audio features from the file, ıncluding MFCCs
-    """
-    try:
-        # Load the audio file using librosa
-        logging.info(f"Loading audio file: {audio_path}")
-        audio_data, sample_rate = librosa.load(audio_path)
-        
-        # Calculate basic features
-        energy = np.mean(librosa.feature.rms(y=audio_data))
-        spectral_centroids = librosa.feature.spectral_centroid(y=audio_data, sr=sample_rate)[0]
-        zero_crossing_rate = np.mean(librosa.feature.zero_crossing_rate(y=audio_data)[0])
-        pitch, _ = librosa.piptrack(y=audio_data, sr=sample_rate)
-        pitch_mean = np.mean(pitch[pitch > 0])
-        energy_var = np.std(librosa.feature.rms(y=audio_data))
-
-       # Calculate MFCCs 
-        mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=13)
-        mfccs_mean = np.mean(mfccs, axis=1)
-        mfccs_features = mfccs_mean[:3] # Use only the first 3 MFCCs
-
-        # combine all features
-        features = np.array([energy, np.mean(spectral_centroids), zero_crossing_rate, pitch_mean, energy_var])
-        features = np.concatenate((features, mfccs_features))
-        
-        # Debug print
-        logging.info("\nExtracted Features:")
-        logging.info(f"Energy: {energy}")
-        logging.info(f"Spectral Centroid: {np.mean(spectral_centroids)}")
-        logging.info(f"Zero Crossing Rate: {zero_crossing_rate}")
-        logging.info(f"Pitch Mean: {pitch_mean}")
-        logging.info(f"Energy Variance: {energy_var}\n")
-        logging.info(f"MFCCs (first 3) : {mfccs_features}\n")
-        
-        #return features
-        return {
-            "main": features[:5],         # Energy, Spectral, ZCR, Pitch, Energy Var
-            "mfcc": mfccs_features        # MFCC1, MFCC2, MFCC3
-        }
-        
-    except Exception as e:
-        logging.error(f"Error extracting features: {e}")
-        raise
-
+# 
+# removed extract features function
 def analyze_emotion(features):
     """
     Analyze emotions based on extracted features
