@@ -128,7 +128,11 @@ def extract_features(audio_path):
         logging.info(f"Energy Variance: {energy_var}\n")
         logging.info(f"MFCCs (first 3) : {mfccs_features}\n")
         
-        return features
+        #return features
+        return {
+            "main": features[:5],         # Energy, Spectral, ZCR, Pitch, Energy Var
+            "mfcc": mfccs_features        # MFCC1, MFCC2, MFCC3
+        }
         
     except Exception as e:
         logging.error(f"Error extracting features: {e}")
@@ -283,7 +287,11 @@ def main():
             features = extract_features(audio_path)
             
             # Analyze emotions
-            emotions = analyze_emotion(features)
+            # the former approach (without mfcc)
+            emotions = analyze_emotion(features["main"])
+
+            # new approach, included MFCC ← (not in use right now)
+            # emotions = analyze_emotion(features["mfcc"])  
             
             # Display results
             logging.info("\nAnalysis Results:")

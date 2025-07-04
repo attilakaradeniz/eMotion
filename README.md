@@ -108,3 +108,32 @@ The program will:
 
 ## Note
 Make sure your system microphone is properly configured and has the necessary permissions enabled.
+
+---
+
+## Developer Notes (Branch-Specific)
+
+### Branch: `feature/mfcc-extraction`
+
+This branch introduces an early stage of modularizing the audio feature extraction process. The goal is to prepare the foundation for transitioning from rule-based to ML-based emotion analysis in future branches.
+
+####  Key Changes:
+- `extract_features()` now returns a dictionary with two keys:
+  - `main`: core audio features (energy, spectral centroid, ZCR, pitch, energy variance)
+  - `mfcc`: first 3 MFCCs
+- `analyze_emotion()` currently works with `features["main"]` (rule-based logic remains untouched)
+- MFCCs are extracted but not yet used in emotion calculation (will be activated in future ML models)
+- Return structure updated for flexibility in future model training
+- Logging expanded to include both feature groups
+
+####  Next Steps:
+- Add a machine learning model (likely in `feature/ml-classifier`)
+- Enable training with stored features + manual emotion labels
+- Introduce analysis with MFCC-based classifiers
+- Build a dashboard for visualizing features and predictions
+- Improve modularity and separation of feature engineering from classification logic
+
+####  Notes:
+- This branch maintains full compatibility with rule-based analysis.
+- The code is written in a way to easily test old and new approaches side by side.
+
